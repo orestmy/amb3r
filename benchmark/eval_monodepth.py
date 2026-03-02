@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from amb3r.model import AMB3R
+from amb3r.model_zoo import load_model
 
 from tools import metric
 from tools.mono import get_dataset
@@ -26,7 +26,9 @@ from tools.alignment import  align_depth_least_square
 def get_args_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default="../data/marigold_data/")
-    parser.add_argument('--results_path', type=str, default="./outputs/monodepth")
+    parser.add_argument('--results_path', type=str, default="./outputs/mono")
+    parser.add_argument('--model_name', type=str, default="amb3r", choices=['amb3r', 'da3'])
+    parser.add_argument('--ckpt_path', type=str, default="../checkpoints/amb3r.pt")
     return parser
 
 
@@ -95,10 +97,8 @@ def resize_rgb_int_cv2(rgb_int, max_res=518, divisible_by=14, target_resolution=
 
 
 args = get_args_parser().parse_args()
+model = load_model(args.model_name, args.ckpt_path)
 
-ckpt_path = '../checkpoints/amb3r.pt'
-model = AMB3R()
-model.load_weights(ckpt_path)
 model.cuda()
 
 

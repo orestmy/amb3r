@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from amb3r.model import AMB3R
+from amb3r.model_zoo import load_model
 from amb3r.datasets import Bonn, Sintel, Kitti
 from tools.depth_eval import depth_evaluation
 
@@ -19,23 +20,23 @@ def get_args_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default="../data/dynamic/")
     parser.add_argument('--results_path', type=str, default="./outputs/videodepth")
+    parser.add_argument('--model_name', type=str, default="amb3r", choices=['amb3r', 'da3'])
+    parser.add_argument('--ckpt_path', type=str, default="../checkpoints/amb3r.pt")
     return parser
 
 args = get_args_parser().parse_args()
 
-ckpt_path = '../checkpoints/amb3r.pt'
-model = AMB3R()
-model.load_weights(ckpt_path)
+model = load_model(args.model_name, ckpt_path=args.ckpt_path)
 model.cuda()
 
 os.makedirs(args.results_path, exist_ok=True)
 
 eval_datasets_all = {
-    'sintel': Sintel(ROOT=args.data_path + '/sintel',
+    'sintel': Sintel(ROOT=args.data_path + 'sintel',
                      resolution=(518, 392), full_video=True, kf_every=1),
-    'bonn': Bonn(ROOT=args.data_path + '/bonn',
+    'bonn': Bonn(ROOT=args.data_path + 'bonn',
                  resolution=(518, 392), full_video=True, kf_every=1),
-    'kitti': Kitti(ROOT=args.data_path + '/kitti',
+    'kitti': Kitti(ROOT=args.data_path + 'kitti',
                             resolution=(518, 392), full_video=True, kf_every=1),
 }
 

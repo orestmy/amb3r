@@ -301,12 +301,14 @@ class AMB3R(nn.Module):
         compare=False
         blend = cfg.blend
 
+        pts_key = 'pts3d_by_unprojection' if getattr(cfg, 'pts_by_unprojection', False) else 'world_points'
+
         if blend:
-            points0 = res_all[0]['world_points']  # (B, nimgs, H, W, 3)
-            conf0 = res_all[0]['world_points_conf']  # (B, n
+            points0 = res_all[0][pts_key]  # (B, nimgs, H, W, 3)
+            conf0 = res_all[0]['world_points_conf']  # (B, nimgs, H, W, 1)
             c2w0 = res_all[0]['pose'][0]
 
-            points1 = res_all[-1]['world_points']  # (B, nimgs, H, W, 3)
+            points1 = res_all[-1][pts_key]  # (B, nimgs, H, W, 3)
             conf1 = res_all[-1]['world_points_conf']  # (B, nimgs, H, W, 1)
             c2w1 = res_all[-1]['pose'][0]
 
@@ -337,7 +339,6 @@ class AMB3R(nn.Module):
             cross_consistency = torch.abs((points0 - points1)).mean()
 
             if cross_consistency > 0.04 and max_median_ratio_1 / max_median_ratio_0 > 1.25 and max_median_ratio_1 > 5.0:
-                # print("Backend is too radical, let us use front-end here")
                 return res_all[0]
         
 
@@ -350,7 +351,7 @@ class AMB3R(nn.Module):
                 c2w_blend = c2w_blend.view(Bs, T, 4, 4).to(points0.device)
 
                 res_new = {
-                    'world_points': points_final,
+                    pts_key: points_final,
                     'world_points_conf': conf_sum / 2.0,
                     'pose': c2w_blend,
                 }
@@ -366,7 +367,7 @@ class AMB3R(nn.Module):
             best_rel_err = 1e5
             best_res = None
             for i, res in enumerate(res_all):
-                pts_pred = res['world_points'][0, :len(ref_pts)]
+                pts_pred = res[pts_key][0, :len(ref_pts)]
                 conf = res['world_points_conf'][0, :len(ref_pts)]
                 conf_sig = (conf-1)/ conf
                 if ref_conf is not None:

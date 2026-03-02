@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'thirdparty'))
 
 from amb3r.model import AMB3R
+from amb3r.model_zoo import load_model
 from amb3r.datasets import SevenScenes, Eth3d, Dtu
 from tools.pts_eval import accuracy, completion, compute_abs_rel
 from vggt.train_utils.normalization import normalize_camera_extrinsics_and_points_batch
@@ -20,14 +21,14 @@ def get_args_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default="../data/rmvd/")
     parser.add_argument('--results_path', type=str, default="./outputs/mvrecon")
+    parser.add_argument('--model_name', type=str, default="amb3r", choices=['amb3r', 'da3'])
+    parser.add_argument('--ckpt_path', type=str, default="../checkpoints/amb3r.pt")
     parser.add_argument('--pts_by_unprojection', type=bool, default=True)
     return parser
 
 args = get_args_parser().parse_args()
 
-ckpt_path = '../checkpoints/amb3r.pt'
-model = AMB3R()
-model.load_weights(ckpt_path)
+model = load_model(args.model_name, ckpt_path=args.ckpt_path)
 model.cuda()
 
 

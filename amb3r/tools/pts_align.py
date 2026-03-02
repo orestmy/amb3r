@@ -98,7 +98,8 @@ def coordinate_alignment(pts_local, c2w_local, conf_local,
                          pts_global, c2w_global, conf_global, 
                          num_kf, transform=True,
                          trunc=None,
-                         scale=None):
+                         scale=None,
+                         robust=True):
     ''' Align local coordinates to global coordinates using a robust scale-invariant alignment 
     followed by a weighted average pose alignment.
     
@@ -140,7 +141,8 @@ def coordinate_alignment(pts_local, c2w_local, conf_local,
                                             pts_kf_local_from_global.contiguous().view(1, T_kf * H, W, 3),
                                             valid_scale_mask,
                                             scale=scale,
-                                            trunc=trunc)
+                                            trunc=trunc,
+                                            robust=robust)
 
     pts_local_scaled = pts_local * kf_scale
     

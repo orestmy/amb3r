@@ -25,6 +25,7 @@
 ```
 
 ## 📌 Latest Updates
+- **[2026-03-02]** Add DepthAnything 3 for [benchmark](benchmark/README.md) and support [**AMB3R-VO (DA3)**](benchmark/README.md)
 - **[2026-02-28]** 📊 We have officially released the code for **AMB3R Benchmark**.
 - **[2026-02-24]** 🗺️ We have officially released the code for **AMB3R-SfM**.
 - **[2026-02-21]** 🏎️ We have officially released the code for **AMB3R-VO**.

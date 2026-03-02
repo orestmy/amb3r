@@ -26,3 +26,4 @@ conf_thresh_exp_scale: 0.5
 conf_threshold_front: 2.7
 conf_threshold_back: 1.0
 blend: true
+pts_by_unprojection: false

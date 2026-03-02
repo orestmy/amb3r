@@ -9,7 +9,7 @@ import open3d as o3d
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from torch.utils.data import DataLoader
 
-from amb3r.model import AMB3R
+from amb3r.model_zoo import load_model
 from amb3r.datasets import SevenScenes
 from amb3r.tools.pts_vis import get_pts_mask
 
@@ -25,16 +25,16 @@ def get_args_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default="../data/")
     parser.add_argument('--results_path', type=str, default="./outputs/slam")
+    parser.add_argument('--model_name', type=str, default="amb3r", choices=['amb3r', 'da3'])
     parser.add_argument('--ckpt_path', type=str, default="../checkpoints/amb3r.pt")
-    parser.add_argument('--num_iters', type=int, default=2)
+    parser.add_argument('--num_iters', type=int, default=5)
     parser.add_argument('--target_point_count', type=int, default=3_000_000)
     parser.add_argument('--conf_threshold', type=float, default=0.0)
     return parser
 
 args = get_args_parser().parse_args()
 
-model = AMB3R()
-model.load_weights(args.ckpt_path)
+model = load_model(args.model_name, ckpt_path=args.ckpt_path)
         
 model.cuda()
 model.eval()

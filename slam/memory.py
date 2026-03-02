@@ -24,7 +24,8 @@ class SLAMemory():
         '''
         
         conf = res['world_points_conf'][0].cpu() # (T, H, W)
-        pts = res['world_points'][0].cpu() # (T, N, 3)
+        pts_key = 'pts3d_by_unprojection' if getattr(self.cfg, 'pts_by_unprojection', False) and 'pts3d_by_unprojection' in res else 'world_points'
+        pts = res[pts_key][0].cpu() # (T, N, 3)
         c2w = res['pose'][0].cpu() # (T, 4, 4)
         conf_sig = (conf - 1) / conf
         conf_sig[conf_sig == 0] = 1e-6
@@ -176,7 +177,8 @@ class SLAMemory():
         '''
 
         # TODO: Low confidence re-start removed in released version
-        pts_local = res['world_points'][0].cpu() # (T, N, 3)
+        pts_key = 'pts3d_by_unprojection' if getattr(self.cfg, 'pts_by_unprojection', False) and 'pts3d_by_unprojection' in res else 'world_points'
+        pts_local = res[pts_key][0].cpu() # (T, N, 3)
         conf_local = res['world_points_conf'][0].cpu() # (T, H, W)
         c2w_local = res['pose'][0].cpu() # (T, 4, 4)
         conf_sig_local = (conf_local - 1) / conf_local

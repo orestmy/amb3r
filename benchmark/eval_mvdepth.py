@@ -16,6 +16,7 @@ if robustmvd_path not in sys.path:
     sys.path.insert(0, robustmvd_path)
 
 from amb3r.model import AMB3R
+from amb3r.model_zoo import load_model
 from rmvd import create_evaluation, prepare_custom_model
 
 
@@ -23,13 +24,14 @@ def get_args_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--results_path', type=str, default="./outputs/mvdepth")
     parser.add_argument('--metric', action='store_true')
+    parser.add_argument('--model_name', type=str, default="amb3r", choices=['amb3r', 'da3'])
+    parser.add_argument('--ckpt_path', type=str, default="../checkpoints/amb3r.pt")
     return parser
 
 
 @torch.no_grad()
 def main(args):
-    model = AMB3R(metric_scale=args.metric)
-    model.load_weights(os.path.join(project_root, 'checkpoints', 'amb3r.pt'))
+    model = load_model(args.model_name, ckpt_path=args.ckpt_path)
     model = prepare_custom_model(model, num_gpus=1)
 
     
