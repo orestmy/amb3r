@@ -13,7 +13,7 @@ conf_min_early_stop_threshold: 0.6
 
 top_k_init_candidate: 5
 low_conf_frame_threshold: 0.1
-allow_unmapped_frames: true
+allow_unmapped_frames: false
 max_kf_per_refinement: 8
 non_kf_search_window: 0.2
 max_mapping_frames: 10

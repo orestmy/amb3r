@@ -19,8 +19,9 @@ from ptv3.point_transformer import PointTransformerV3
 
 class BackEnd(nn.Module):
     def __init__(self, hash_base=1024, in_dim=1024, out_dim=256, 
-                 k_neighbors=16, depth=48):
+                 k_neighbors=16, depth=48, interp_v2=False):
         super(BackEnd, self).__init__()
+        self.register_buffer('interp_v2', torch.tensor(interp_v2, dtype=torch.bool))
         self.base = hash_base
         self.aligner = nn.Sequential(
             nn.Linear(in_dim, in_dim//2),
@@ -205,10 +206,18 @@ class BackEnd(nn.Module):
             feat, info = self.mean_by_voxel(pts, feats, batch_ids, voxel_size, bounding_boxes)
             vox_id = info['unique_indices']
 
+            if isinstance(voxel_size, torch.Tensor):
+                coord = voxel_size[vox_id[:, 0]] * vox_id[:, 1:]
+            else:
+                coord = voxel_size * vox_id[:, 1:]
+
+            if self.interp_v2:
+                coord = coord + bounding_boxes[vox_id[:, 0], 0]
+
             data_dict = {
                 'feat': feat,
                 'grid_coord': vox_id[:, 1:],
-                'coord': voxel_size[vox_id[:, 0]] * vox_id[:, 1:] if isinstance(voxel_size, torch.Tensor) else voxel_size * vox_id[:, 1:], # FIXME
+                'coord': coord,
                 'batch': vox_id[:, 0],
             }
 

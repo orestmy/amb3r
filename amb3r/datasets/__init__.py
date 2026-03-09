@@ -14,6 +14,8 @@ from .kitti import Kitti
 from .tnt import Tnt
 from .imc import Imc
 
+from .scannet import Scannet
+
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'thirdparty'))
 from thirdparty.dust3r.datasets.utils.transforms import *

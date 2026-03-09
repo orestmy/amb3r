@@ -17,7 +17,8 @@ from moge.moge.train.losses import scale_invariant_alignment
 
 class AMB3R(nn.Module):
     def __init__(self, device='cuda', metric_scale=True,
-                 voxel_resolutions=[0.01], precision='bf16'):
+                 voxel_resolutions=[0.01], precision='bf16',
+                 interp_v2=False):
         super().__init__()
 
         self.device = device
@@ -28,7 +29,8 @@ class AMB3R(nn.Module):
         self.front_end = FrontEnd(metric_scale=metric_scale)
         self.backend = BackEnd(in_dim=2048+1024, 
                                   out_dim=1024, 
-                                  k_neighbors=16)
+                                  k_neighbors=16,
+                                  interp_v2=interp_v2)
 
 
     def prepare(self, data_type='bf16'):
@@ -59,6 +61,12 @@ class AMB3R(nn.Module):
         state_dict = torch.load(path, map_location='cpu')
         if 'model' in state_dict:
             state_dict = state_dict['model']
+
+        # Auto-detect interp_v2 from checkpoint
+        interp_key = 'backend.interp_v2'
+        if interp_key in state_dict and state_dict[interp_key].item():
+            self.backend.interp_v2.fill_(True)
+
         self.load_state_dict(state_dict, strict=strict)
         self.prepare(data_type)
 

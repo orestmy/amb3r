@@ -5,7 +5,7 @@
 
 ### [Paper](https://arxiv.org/abs/2511.20343) | [Project Page](https://hengyiwang.github.io/projects/amber) 
 
-<a href="#installation">Installation</a> | <a href="#amb3r-base-model">Base Model</a> | <a href="#slam-amb3r-vo">SLAM</a> | <a href="#sfm-amb3r-sfm">SfM</a> | <a href="#benchmark">Benchmark</a>
+<a href="#installation">Installation</a> | <a href="#amb3r-base-model">Base Model</a> | <a href="#slam-amb3r-vo">SLAM</a> | <a href="#sfm-amb3r-sfm">SfM</a> | <a href="#benchmark">Benchmark</a> | <a href="#training">Training</a>
 
 </div>
 
@@ -25,6 +25,7 @@
 ```
 
 ## 📌 Latest Updates
+- **[2026-03-09]** Add training code for [AMB3R](docs/train.md).
 - **[2026-03-02]** Add DepthAnything 3 for [benchmark](benchmark/README.md) and support [**AMB3R-VO (DA3)**](benchmark/README.md)
 - **[2026-02-28]** 📊 We have officially released the code for **AMB3R Benchmark**.
 - **[2026-02-24]** 🗺️ We have officially released the code for **AMB3R-SfM**.
@@ -123,14 +124,6 @@ def run_amb3r_vo(self, frames, cfg, keyframe_memory=None):
     }
 ```
 
-#### AMB3R-VO (DA3)
-
-Run the AMB3R-VO (DA3) with:
-
-```bash
-python slam/run.py --data_path <path-to-video-folder> --model_name da3 --ckpt_path depth-anything/DA3NESTED-GIANT-LARGE
-```
-
 ---
 
 <a id="sfm-amb3r-sfm"></a>
@@ -171,6 +164,13 @@ def run_amb3r_sfm(self, frames, cfg, keyframe_memory=None, benchmark_conf0=None)
 ## 📊 Benchmark
 
 Please refer to [benchmark/README.md](benchmark/README.md) for the benchmark details.
+
+---
+
+<a id="training"></a>
+## 🎓 Training
+
+Please refer to [docs/train.md](docs/train.md) for the training details.
 
 ---
 
