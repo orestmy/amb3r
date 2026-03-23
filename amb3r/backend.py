@@ -30,7 +30,7 @@ class BackEnd(nn.Module):
             nn.GELU()
         )
 
-        self.point_transformer = PointTransformerV3()
+        self.point_transformer = PointTransformerV3(backbone_cfg={'enable_flash': False})
         self.k_neighbors = k_neighbors
         self.downsample = DownBlock(in_channels=1024, mid_channels=1024, out_channels=1024)
         self.zero_conv = ZeroConvBlock()
