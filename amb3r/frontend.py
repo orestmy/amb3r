@@ -78,7 +78,7 @@ class FrontEnd(nn.Module):
                                                          voxel_layer_list=voxel_layer_list, detach=detach, mem_eff=True)
     
 
-    def decode_heads(self, images, decoded_features):
+    def decode_heads(self, images, decoded_features, skip_point_head=False):
 
         '''
         Decode feature using VGGT heads to get depth, camera pose, and 3D points.
@@ -123,13 +123,16 @@ class FrontEnd(nn.Module):
                 predictions["depth"] = depth
                 predictions["depth_conf"] = depth_conf
                     
-            # Point prediction
-            if self.model.point_head is not None:
+            # Point prediction (skip in SLAM mode — uses depth unprojection instead)
+            if self.model.point_head is not None and not skip_point_head:
                 pts3d, pts3d_conf = self.model.point_head(
                     aggregated_tokens_list, images=images, patch_start_idx=ps_idx
                 )
                 predictions["world_points"] = pts3d
                 predictions["world_points_conf"] = pts3d_conf
+            else:
+                # Use depth_conf as surrogate for world_points_conf
+                predictions["world_points_conf"] = depth_conf
             
             
 
@@ -169,7 +172,7 @@ class FrontEnd(nn.Module):
         return predictions
 
 
-    def decode_patch_tokens_and_heads(self, images, patch_tokens, voxel_feat=None, voxel_layer_list=None, detach=False):
+    def decode_patch_tokens_and_heads(self, images, patch_tokens, voxel_feat=None, voxel_layer_list=None, detach=False, skip_point_head=False):
         '''
         Decode patch tokens and heads to get final predictions.
         Params:
@@ -177,12 +180,13 @@ class FrontEnd(nn.Module):
             - patch_tokens: dict containing patch tokens
             - voxel_feat: encoder voxel features
             - voxel_layer_list: list of voxel features for each decoder layer
+            - skip_point_head: if True, skip point head (SLAM mode — uses depth unprojection)
         Returns:
             - predictions: dict containing depth, camera pose, 3D points, camera poses,
         '''
-        
+
         decoded_features = self.decode_patch_tokens(patch_tokens, images, voxel_feat=voxel_feat, voxel_layer_list=voxel_layer_list, detach=detach)
-        predictions = self.decode_heads(images, decoded_features)
+        predictions = self.decode_heads(images, decoded_features, skip_point_head=skip_point_head)
 
         return predictions
     

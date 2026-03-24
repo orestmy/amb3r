@@ -42,8 +42,9 @@ def get_args():
     parser.add_argument("--output_dir", type=str, default="../data/eval_data_mp4_output")
     parser.add_argument("--ckpt_path", type=str, default="./checkpoints/amb3r.pt")
     parser.add_argument("--model_name", type=str, default="amb3r", choices=["amb3r", "da3"])
-    parser.add_argument("--resolution", type=int, nargs=2, default=[518, 392], help="W H")
+    parser.add_argument("--resolution", type=int, nargs=2, default=[448, 336], help="W H")
     parser.add_argument("--max_frames", type=int, default=0, help="Max frames to process (0=all)")
+    parser.add_argument("--map_every", type=int, default=16, help="Run model every N frames")
     parser.add_argument("--frame_step", type=int, default=1, help="Use every Nth frame")
     parser.add_argument(
         "--example_mcap",
@@ -122,12 +123,13 @@ def extract_frames_from_mp4(mp4_path, resolution, max_frames=0, frame_step=1):
     return frames
 
 
-def run_slam(model, frame_tensors):
+def run_slam(model, frame_tensors, map_every=8):
     """Run AMB3R SLAM on preprocessed frame tensors.
 
     Args:
         model: loaded AMB3R model on GPU
         frame_tensors: list of (3, H, W) tensors in [-1, 1]
+        map_every: run model every N frames
 
     Returns:
         poses: numpy array (T, 4, 4) camera-to-world matrices
@@ -136,9 +138,12 @@ def run_slam(model, frame_tensors):
 
     images = torch.stack(frame_tensors).unsqueeze(0)  # (1, T, 3, H, W)
     num_frames = images.shape[1]
-    print(f"  Running SLAM on {num_frames} frames...")
+    print(f"  Running SLAM on {num_frames} frames (map_every={map_every})...")
 
     pipeline = AMB3R_VO(model, cfg_path=str(SCRIPT_DIR / "slam" / "slam_config.yaml"))
+    pipeline.cfg.skip_point_head = True
+    pipeline.cfg.pts_by_unprojection = True
+    pipeline.cfg.map_every = map_every
     memory = pipeline.run(images)
     poses = memory.poses.cpu().numpy()
     return poses
@@ -280,7 +285,7 @@ def main():
         timestamps_ns = [f[0] for f in frames]
         tensors = [f[1] for f in frames]
 
-        poses = run_slam(model, tensors)
+        poses = run_slam(model, tensors, map_every=args.map_every)
 
         n = min(len(poses), len(timestamps_ns))
         if len(poses) != len(timestamps_ns):

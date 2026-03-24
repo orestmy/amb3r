@@ -111,7 +111,7 @@ class AMB3R(nn.Module):
 
         '''
         feat = torch.cat([res['enc'], res['dec']], dim=-1)
-        pts = res['world_points']  # (B, nimgs, H, W, 3)
+        pts = res.get('world_points', res.get('pts3d_by_unprojection'))  # (B, nimgs, H, W, 3)
 
         bs, nimgs, H, W, _ = pts.shape
 
@@ -292,17 +292,18 @@ class AMB3R(nn.Module):
         '''
         res_all = []
         
+        skip_point_head = getattr(cfg, 'skip_point_head', False)
         images, patch_tokens = self.front_end.encode_patch_tokens(frames)
-        res = self.front_end.decode_patch_tokens_and_heads(images, patch_tokens)
+        res = self.front_end.decode_patch_tokens_and_heads(images, patch_tokens, skip_point_head=skip_point_head)
         res_all.append(res)
 
 
         conf = res['world_points_conf']  # (B, nimgs, H, W, 1)
         if conf.mean() > cfg.conf_threshold_front:
             return res_all[-1]
-        
-        
-        
+
+
+
 
         res1 = self.run_backend(res, images, patch_tokens=patch_tokens)
         res_all.append(res1)
